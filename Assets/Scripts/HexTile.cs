@@ -7,11 +7,13 @@ using UnityEngine;
 public class HexTile : MonoBehaviour {
     private SpriteRenderer _sprite;
     private bool _isHighlighted = false;
+
     public Action<HexTile> OnHexMouseClick;
     public Action<HexTile> OnHexMouseEnter;
     public Action<HexTile> OnHexMouseExit;
 
-    [NonSerialized] public GameObject content;
+    [HideInInspector] public Gem content;
+    [HideInInspector] public Vector2 axialPos;
 
     private Color _origColor;
     public Color highlightColor;

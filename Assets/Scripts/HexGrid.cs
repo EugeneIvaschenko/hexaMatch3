@@ -10,7 +10,7 @@ public class HexGrid : MonoBehaviour {
     public Dictionary<Vector2, HexTile> hexGrid { get; private set; }
     private HexCoordinateSystem HexCoordinateSystem = HexCoordinateSystem.Axial;
 
-    private void Start() {
+    public void Init() {
         GenerateRoundGrid(_size);
     }
 
@@ -21,31 +21,9 @@ public class HexGrid : MonoBehaviour {
                 int dz = -dx - dy;
                 Vector2 hexPos = HexMath.CubeToAxial(new Vector3(dx, dy, dz));
                 hexGrid[hexPos] = Instantiate(_tilePrefab, HexMath.GetPixelPos(HexMath.AxialToEvenQ(hexPos), HexCoordinateSystem.EvenQOffset, _padding), Quaternion.identity, transform);
-                hexGrid[hexPos].SetText(hexPos);
+                //hexGrid[hexPos].SetText(hexPos);
+                hexGrid[hexPos].axialPos = hexPos;
             }
-        }
-    }
-
-    public void ConvertateGrid() {
-        Dictionary<Vector2, HexTile> newHexGrid = new Dictionary<Vector2, HexTile>();
-        
-        foreach(var hexPair in hexGrid) {
-            Vector2 newPos;
-            if (HexCoordinateSystem == HexCoordinateSystem.EvenQOffset) {
-                newPos = HexMath.EvenQToAxial(hexPair.Key);
-            } else {
-                newPos = HexMath.AxialToEvenQ(hexPair.Key);
-            }
-            newHexGrid[newPos] = hexPair.Value;
-            hexPair.Value.SetText(newPos);
-        }
-        hexGrid = newHexGrid;
-
-        if (HexCoordinateSystem == HexCoordinateSystem.EvenQOffset) {
-            HexCoordinateSystem = HexCoordinateSystem.Axial;
-        }
-        else {
-            HexCoordinateSystem = HexCoordinateSystem.EvenQOffset;
         }
     }
 
@@ -54,5 +32,9 @@ public class HexGrid : MonoBehaviour {
             if (hex.Value == a) return hex.Key;
         }
         throw new System.Exception("Has no found searched hex");
+    }
+
+    public int Size() {
+        return _size;
     }
 }

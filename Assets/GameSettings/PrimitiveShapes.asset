@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5070239887e7a0b4cbf22f140c7d43f2, type: 3}
+  m_Name: PrimitiveShapes
+  m_EditorClassIdentifier: 
+  list:
+  - shapeType: 0
+    shapeSprite: {fileID: 21300000, guid: 6c955d2b2c1c5ca45a7e5340a552f86f, type: 3}
+  - shapeType: 1
+    shapeSprite: {fileID: 21300000, guid: e01ac33f044c668499e5e397b2a8a046, type: 3}
+  - shapeType: 2
+    shapeSprite: {fileID: 21300000, guid: 49e1f32fe55aa7a40b4b53d9327bd47e, type: 3}
+  - shapeType: 3
+    shapeSprite: {fileID: 21300000, guid: 3964394f2a3d3c04d8c76c048e78bbb8, type: 3}
+  - shapeType: 5
+    shapeSprite: {fileID: 21300000, guid: 3bfa2957f49c7d74d8dc4004a1a47e10, type: 3}

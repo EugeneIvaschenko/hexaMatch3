@@ -21,3 +21,13 @@ public enum CubeHexDirectionsFlat {
     S,
     SW
 }
+
+public enum RotationDirection {
+    Left,
+    Right
+}
+
+public enum GemSign {
+    Color,
+    Shape
+}

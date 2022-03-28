@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -49,13 +48,34 @@ public static class HexMath {
         return new Vector3(pos.x, y, -pos.x - y);
     }
 
-    private static Dictionary<CubeHexDirectionsFlat, Vector3> cubeDirections = new Dictionary<CubeHexDirectionsFlat, Vector3>() {
+    public static int LowerYInX(int x, int gridSize) {
+        return x < 0 ? gridSize : gridSize - x;
+    }
+
+    public static int HigherYinX(int x, int gridSize) {
+        return x < 0 ? -gridSize - x : -gridSize;
+    }
+
+    public static int HexesInX(int x, int gridSize) {
+        return gridSize * 2 + 1 - Mathf.Abs(x);
+    }
+
+    public static readonly Dictionary<CubeHexDirectionsFlat, Vector3> cubeDirections = new Dictionary<CubeHexDirectionsFlat, Vector3>() {
         { CubeHexDirectionsFlat.NW, new Vector3(-1, 0, +1)},
         { CubeHexDirectionsFlat.N, new Vector3(0, -1, +1)},
         { CubeHexDirectionsFlat.NE, new Vector3(+1, -1, 0)},
         { CubeHexDirectionsFlat.SE, new Vector3(+1, 0, -1)},
         { CubeHexDirectionsFlat.S, new Vector3(0, +1, -1)},
         { CubeHexDirectionsFlat.SW, new Vector3(-1, +1, 0)}
+    };
+
+    public static readonly Dictionary<CubeHexDirectionsFlat, CubeHexDirectionsFlat> oppositeDirs = new Dictionary<CubeHexDirectionsFlat, CubeHexDirectionsFlat>() {
+        { CubeHexDirectionsFlat.NW, CubeHexDirectionsFlat.SE},
+        { CubeHexDirectionsFlat.N, CubeHexDirectionsFlat.S},
+        { CubeHexDirectionsFlat.NE, CubeHexDirectionsFlat.SW},
+        { CubeHexDirectionsFlat.SE, CubeHexDirectionsFlat.NW},
+        { CubeHexDirectionsFlat.S, CubeHexDirectionsFlat.N},
+        { CubeHexDirectionsFlat.SW, CubeHexDirectionsFlat.NE}
     };
 
     public static Vector3 CubeVector(CubeHexDirectionsFlat direction) {
@@ -70,6 +90,10 @@ public static class HexMath {
         return hex + cubeDirections[direction];
     }
 
+    public static Vector3 CubeNeighbor(Vector2 hex, CubeHexDirectionsFlat direction) {
+        return CubeNeighbor(AxialToCube(hex), direction);
+    }
+
     public static float CubeDistance(Vector3 a, Vector3 b) {
         return Mathf.Max(Mathf.Abs(a.x - b.x), Mathf.Abs(a.y - b.y), Mathf.Abs(a.z - b.z));
     }
@@ -78,27 +102,17 @@ public static class HexMath {
         return CubeDistance(AxialToCube(a), AxialToCube(b));
     }
 
-    /*public static Vector3 LerpCube(Vector3 a, Vector3 b, float t) {
-        return new Vector3(Mathf.Lerp(a.x, b.x, t), Mathf.Lerp(a.y, b.y, t), Mathf.Lerp(a.z, b.z, t));
+    public static Vector3 RotateTileAroundCenter(Vector3 hex, int sixthsCircle) {
+        return RotateTileAround(hex, Vector3.zero, sixthsCircle);
     }
 
-    public static Vector3 RoundCube(Vector3 a) {
-        return new Vector3((int)Mathf.Round(a.x), (int)Mathf.Round(a.y), (int)Mathf.Round(a.z));
-    }
-
-    public static List<Vector3> CubeLine(Vector3 a, Vector3 b) {
-        List<Vector3> line = new List<Vector3>();
-        int d = CubeDistance(a, b);
-        Debug.Log(d);
-        for (int i = 0; i < d + 1; i++) {
-            line.Add(RoundCube(LerpCube(a, b, 1.0f / d * i)));
-            Debug.Log(line[line.Count - 1].ToString());
+    public static Vector3 RotateTileAround(Vector3 hex, Vector3 aroundHex, int sixthsCircle) {
+        hex -= aroundHex;
+        for (int i = 0; i < Mathf.Abs(sixthsCircle); i++) {
+            if (sixthsCircle < 0) hex = new Vector3(-hex.z, -hex.x, -hex.y);
+            else hex = new Vector3(-hex.y, -hex.z, -hex.x);
         }
-        Debug.Log(line.ToString());
-        return line;
+        hex += aroundHex;
+        return hex;
     }
-
-    public static List<Vector3> CubeLine(Vector2 a, Vector2 b) {
-        return CubeLine(AxialToCube(a), AxialToCube(b));
-    }*/
 }
