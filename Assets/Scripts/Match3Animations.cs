@@ -1,7 +1,7 @@
 using DG.Tweening;
 using UnityEngine;
 
-public class Match3Animator {
+public class Match3Animations {
     private Sequence fillingSequence;
     private float fallingDuration = 0.3f;
     private float fillingDuration = 0.4f;

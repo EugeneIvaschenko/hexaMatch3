@@ -115,4 +115,8 @@ public static class HexMath {
         hex += aroundHex;
         return hex;
     }
+
+    public static float MaxAbs(Vector3 pos) {
+        return Mathf.Max(Mathf.Abs(pos.x), Mathf.Abs(pos.y), Mathf.Abs(HexMath.AxialToCube(pos).z));
+    }
 }

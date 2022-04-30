@@ -667,9 +667,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cce80bd2821ed44597706107de77858, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _size: 4
-  _padding: 0
+  _size: 3
+  _padding: 0.05
   _tilePrefab: {fileID: 5767601822692823231, guid: e2948843db600204b861efeb160fd75e, type: 3}
+  gemPrefab: {fileID: 8288309135092928825, guid: 7760fb5947c4e364b936e2eb715a25df, type: 3}
+  colors: {fileID: 11400000, guid: ff1f81ec82ea12b448686053686deb5b, type: 2}
+  shapes: {fileID: 11400000, guid: 2d089c2f4edf2bf47b7ebbc18ad71d5b, type: 2}
 --- !u!4 &1847277475
 Transform:
   m_ObjectHideFlags: 0
@@ -696,6 +699,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c46a662c31ad72d4a8cc779374268db6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gemPrefab: {fileID: 8288309135092928825, guid: 7760fb5947c4e364b936e2eb715a25df, type: 3}
-  colors: {fileID: 11400000, guid: ff1f81ec82ea12b448686053686deb5b, type: 2}
-  shapes: {fileID: 11400000, guid: 2d089c2f4edf2bf47b7ebbc18ad71d5b, type: 2}

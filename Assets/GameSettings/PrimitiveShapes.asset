@@ -23,3 +23,5 @@ MonoBehaviour:
     shapeSprite: {fileID: 21300000, guid: 3964394f2a3d3c04d8c76c048e78bbb8, type: 3}
   - shapeType: 5
     shapeSprite: {fileID: 21300000, guid: 3bfa2957f49c7d74d8dc4004a1a47e10, type: 3}
+  - shapeType: 4
+    shapeSprite: {fileID: 21300000, guid: 1c4efd80c0a3d3c4ea6afb177eeb977e, type: 3}
