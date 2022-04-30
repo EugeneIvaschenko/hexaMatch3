@@ -32,15 +32,19 @@ public class Match3Animations {
     }
 
     public void MoveToParent(Transform transform) {
-        if (!fillingSequence.IsActive() || fillingSequence.IsComplete()) fillingSequence = DOTween.Sequence();
+        if (IsAnactiveAndComplete()) fillingSequence = DOTween.Sequence();
         fillingSequence.Join(transform.DOLocalMove(Vector3.zero, fallingDuration).SetEase(Ease.Linear));
     }
 
     public void RiseGem(Transform transform) {
-        if (!fillingSequence.IsActive() || fillingSequence.IsComplete()) fillingSequence = DOTween.Sequence();
+        if (IsAnactiveAndComplete()) fillingSequence = DOTween.Sequence();
         Vector3 scale = transform.localScale;
         transform.localScale = Vector3.zero;
         fillingSequence.Join(transform.DOScale(scale, fillingDuration).SetEase(Ease.InSine));
+    }
+
+    private bool IsAnactiveAndComplete() {
+        return !fillingSequence.IsActive() || fillingSequence.IsComplete();
     }
 
     public void AddCallback(TweenCallback callback) {

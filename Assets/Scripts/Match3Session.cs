@@ -1,20 +1,21 @@
-using DG.Tweening;
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Match3Session : MonoBehaviour {
 
     private HexGrid grid;
     private HexTile checkedTile;
 
+    [SerializeField] private TextMeshProUGUI scoreText;
+
+    private int score = 0;
     private bool isBlockedClickHandler = false;
 
-    private void Start() {
+    private void Awake() {
         grid = GetComponent<HexGrid>();
         grid.Init();
         grid.animationEnd += UnblockClickHandler;
+        //grid.animationEnd += SumScore;
         Screen.orientation = ScreenOrientation.Landscape;
         Screen.autorotateToPortrait = false;
         grid.FillGrid();
@@ -62,6 +63,17 @@ public class Match3Session : MonoBehaviour {
     }
 
     private void UnblockClickHandler() {
+        SumScore();
         isBlockedClickHandler = false;
+    }
+
+    private void SumScore() {
+        AddScore(grid.addPoints);
+        grid.FlushPoints();
+    }
+
+    private void AddScore(int points) {
+        score += points;
+        if(scoreText != null) scoreText.text = "Score: " + score.ToString();
     }
 }

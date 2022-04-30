@@ -1,11 +1,10 @@
 using DG.Tweening;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class HexGrid : MonoBehaviour {
-    [SerializeField] [Min(3)] private int _size;
+    [SerializeField] [Min(2)] private int _size;
     [SerializeField] private float _padding;
     [SerializeField] private HexTile _tilePrefab;
     [SerializeField] private Gem gemPrefab;
@@ -13,6 +12,8 @@ public class HexGrid : MonoBehaviour {
     [SerializeField] private ShapesSO shapes;
 
     public Dictionary<Vector2, HexTile> hexGrid { get; private set; }
+
+    public int addPoints { get; private set; } = 0; //temporary solution to score. Move to logic class. TODO refactor
 
     public event Action animationEnd;
 
@@ -24,6 +25,10 @@ public class HexGrid : MonoBehaviour {
             if (hex.Value == a) return hex.Key;
         }
         throw new System.Exception("Has no found searched hex");
+    }
+
+    public void FlushPoints() {
+        addPoints = 0;
     }
 
     public int Size() {
@@ -57,6 +62,7 @@ public class HexGrid : MonoBehaviour {
             if (tile.content == null || tile.content.gameObject == null) continue;
             Destroy(tile.content.gameObject);
             tile.content = null;
+            addPoints++;
         }
     }
 
