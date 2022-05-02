@@ -13,9 +13,8 @@ public class HexGrid : MonoBehaviour {
 
     public Dictionary<Vector2, HexTile> hexGrid { get; private set; }
 
-    public int addPoints { get; private set; } = 0; //temporary solution to score. Move to logic class. TODO refactor
-
     public event Action animationEnd;
+    public event Action<List<Gem>> gemsGathered;
 
     private HexCoordinateSystem HexCoordinateSystem = HexCoordinateSystem.Axial;
     private Match3Animations animator = new Match3Animations();
@@ -25,10 +24,6 @@ public class HexGrid : MonoBehaviour {
             if (hex.Value == a) return hex.Key;
         }
         throw new System.Exception("Has no found searched hex");
-    }
-
-    public void FlushPoints() {
-        addPoints = 0;
     }
 
     public int Size() {
@@ -57,13 +52,15 @@ public class HexGrid : MonoBehaviour {
         animator.RorateField(transform, transform.rotation.eulerAngles + angle, AnimationEnd);
     }
 
-    private void DestroyGems(HexTile[] tiles) {
+    private void GatherGems(HexTile[] tiles) {
+        List<Gem> gatheredGems = new List<Gem>();
         foreach (var tile in tiles) {
             if (tile.content == null || tile.content.gameObject == null) continue;
-            Destroy(tile.content.gameObject);
+            if (!gatheredGems.Contains(tile.content)) gatheredGems.Add(tile.content);
+            tile.content.gameObject.SetActive(false);
             tile.content = null;
-            addPoints++;
         }
+        gemsGathered?.Invoke(gatheredGems);
     }
 
     private void RefillEmptyTiles() {
@@ -121,7 +118,7 @@ public class HexGrid : MonoBehaviour {
             DOTween.Clear();
             animator.SwapGems(tile.content.transform, checkedTile.content.transform, () => {
                 animator.Explode(GetGemTransforms(lines), () => {
-                    DestroyGems(GetTiles(lines));
+                    GatherGems(GetTiles(lines));
                     RefillEmptyTiles();
                 });
             });
@@ -136,7 +133,7 @@ public class HexGrid : MonoBehaviour {
         }
         if (lines.Count > 0) {
             animator.Explode(GetGemTransforms(lines), () => {
-                DestroyGems(GetTiles(lines));
+                GatherGems(GetTiles(lines));
                 RefillEmptyTiles();
             });
             return true;

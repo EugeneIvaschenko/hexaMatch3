@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
 
 public class Match3Session : MonoBehaviour {
 
@@ -15,7 +16,7 @@ public class Match3Session : MonoBehaviour {
         grid = GetComponent<HexGrid>();
         grid.Init();
         grid.animationEnd += UnblockClickHandler;
-        //grid.animationEnd += SumScore;
+        grid.gemsGathered += SumScore;
         Screen.orientation = ScreenOrientation.Landscape;
         Screen.autorotateToPortrait = false;
         grid.FillGrid();
@@ -63,13 +64,11 @@ public class Match3Session : MonoBehaviour {
     }
 
     private void UnblockClickHandler() {
-        SumScore();
         isBlockedClickHandler = false;
     }
 
-    private void SumScore() {
-        AddScore(grid.addPoints);
-        grid.FlushPoints();
+    private void SumScore(List<Gem> gatheredGems) {
+        AddScore(gatheredGems.Count);
     }
 
     private void AddScore(int points) {
