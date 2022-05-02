@@ -122,7 +122,7 @@ public class HexGrid : MonoBehaviour {
                 });
             });
         }
-        else EndAnimation();
+        else DoFailSwapAnimation(tile, checkedTile);
     }
 
     private bool SearchToExplodeByAutoFill() {
@@ -252,5 +252,9 @@ public class HexGrid : MonoBehaviour {
 
     private void EndAnimation() {
         AnimationEnd?.Invoke();
+    }
+
+    private void DoFailSwapAnimation(HexTile tile, HexTile checkedTile) {
+        animator.FailSwapping(tile.content.transform, checkedTile.content.transform, EndAnimation);
     }
 }

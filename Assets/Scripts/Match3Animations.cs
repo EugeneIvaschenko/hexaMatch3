@@ -4,8 +4,9 @@ using UnityEngine;
 public class Match3Animations {
     private Sequence fillingSequence;
     private float fallingDuration = 0.3f;
-    private float fillingDuration = 0.4f;
-    private float swappingDuration = 0.5f;
+    private float fillingDuration = 0.35f;
+    private float swappingDuration = 0.4f;
+    private float failSwappingDuration = 0.25f;
     private float explosionDuration = 0.6f;
     private float fieldRotationDuration = 0.6f;
 
@@ -21,6 +22,15 @@ public class Match3Animations {
     public void SwapGems(Transform transform1, Transform transform2, TweenCallback callback = null) {
         transform1.DOMove(transform2.position, swappingDuration);
         transform2.DOMove(transform1.position, swappingDuration).OnComplete(callback);
+    }
+
+    public void FailSwapping(Transform transform1, Transform transform2, TweenCallback callback = null) {
+        Sequence sequence = DOTween.Sequence();
+        sequence.Join(transform1.DOMove(transform2.position, failSwappingDuration));
+        sequence.Join(transform2.DOMove(transform1.position, failSwappingDuration));
+        sequence.Append( transform1.DOMove(transform1.position, failSwappingDuration));
+        sequence.Join(transform2.DOMove(transform2.position, failSwappingDuration));
+        sequence.AppendCallback(callback);
     }
 
     public void Gathering(Transform[] transforms, TweenCallback callback = null) {
