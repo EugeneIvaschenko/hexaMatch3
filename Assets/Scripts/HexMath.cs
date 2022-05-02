@@ -102,6 +102,15 @@ public static class HexMath {
         return CubeDistance(AxialToCube(a), AxialToCube(b));
     }
 
+    public static bool IsCubeNeighbor(Vector2 a, Vector2 b) {
+        return IsCubeNeighbor(AxialToCube(a), AxialToCube(b));
+    }
+
+    public static bool IsCubeNeighbor(Vector3 a, Vector3 b) {
+        if (CubeDistance(a, b) == 1) return true;
+        else return false;
+    }
+
     public static Vector3 RotateTileAroundCenter(Vector3 hex, int sixthsCircle) {
         return RotateTileAround(hex, Vector3.zero, sixthsCircle);
     }

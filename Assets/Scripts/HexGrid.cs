@@ -13,8 +13,8 @@ public class HexGrid : MonoBehaviour {
 
     public Dictionary<Vector2, HexTile> hexGrid { get; private set; }
 
-    public event Action animationEnd;
-    public event Action<List<Gem>> gemsGathered;
+    public event Action AnimationEnd;
+    public event Action<List<Gem>> GemsGathered;
 
     private HexCoordinateSystem HexCoordinateSystem = HexCoordinateSystem.Axial;
     private Match3Animations animator = new Match3Animations();
@@ -28,6 +28,10 @@ public class HexGrid : MonoBehaviour {
 
     public int Size() {
         return _size;
+    }
+
+    private bool IsTileExist(Vector3 startHex, int gridSize) {
+        return HexMath.MaxAbs(startHex) <= gridSize;
     }
 
     public void Init() {
@@ -49,7 +53,7 @@ public class HexGrid : MonoBehaviour {
 
     public void TurnField(RotationDirection dir) {
         Vector3 angle = new Vector3(0, 0, dir == RotationDirection.Left ? 60f : -60f);
-        animator.RorateField(transform, transform.rotation.eulerAngles + angle, AnimationEnd);
+        animator.RorateField(transform, transform.rotation.eulerAngles + angle, EndAnimation);
     }
 
     private void GatherGems(HexTile[] tiles) {
@@ -60,7 +64,7 @@ public class HexGrid : MonoBehaviour {
             tile.content.gameObject.SetActive(false);
             tile.content = null;
         }
-        gemsGathered?.Invoke(gatheredGems);
+        GemsGathered?.Invoke(gatheredGems);
     }
 
     private void RefillEmptyTiles() {
@@ -81,7 +85,7 @@ public class HexGrid : MonoBehaviour {
         }
 
         if (emptyTiles.Count > 0) animator.AddCallback(RefillEmptyTiles);
-        else if (!SearchToExplodeByAutoFill()) AnimationEnd();
+        else if (!SearchToExplodeByAutoFill()) EndAnimation();
     }
 
     private void TryFillDownIn(HexTile tile) {
@@ -117,13 +121,13 @@ public class HexGrid : MonoBehaviour {
         if (TryMoveGemsToExplode(tile, checkedTile, out List<List<HexTile>> lines)) {
             DOTween.Clear();
             animator.SwapGems(tile.content.transform, checkedTile.content.transform, () => {
-                animator.Explode(GetGemTransforms(lines), () => {
+                animator.Gathering(GetGemTransforms(lines), () => {
                     GatherGems(GetTiles(lines));
                     RefillEmptyTiles();
                 });
             });
         }
-        else AnimationEnd();
+        else EndAnimation();
     }
 
     private bool SearchToExplodeByAutoFill() {
@@ -132,7 +136,7 @@ public class HexGrid : MonoBehaviour {
             FindMatchLines(ref lines, tilePair.Value);
         }
         if (lines.Count > 0) {
-            animator.Explode(GetGemTransforms(lines), () => {
+            animator.Gathering(GetGemTransforms(lines), () => {
                 GatherGems(GetTiles(lines));
                 RefillEmptyTiles();
             });
@@ -306,11 +310,7 @@ public class HexGrid : MonoBehaviour {
         gem.transform.localRotation = Quaternion.Inverse(transform.rotation);
     }
 
-    private bool IsTileExist(Vector3 startHex, int gridSize) {
-        return HexMath.MaxAbs(startHex) <= gridSize;
-    }
-
-    private void AnimationEnd() {
-        animationEnd?.Invoke();
+    private void EndAnimation() {
+        AnimationEnd?.Invoke();
     }
 }

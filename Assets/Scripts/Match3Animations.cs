@@ -23,7 +23,7 @@ public class Match3Animations {
         transform2.DOMove(transform1.position, swappingDuration).OnComplete(callback);
     }
 
-    public void Explode(Transform[] transforms, TweenCallback callback = null) {
+    public void Gathering(Transform[] transforms, TweenCallback callback = null) {
         Sequence sequence = DOTween.Sequence();
         foreach (var transform in transforms) {
             sequence.Join(transform.DOScale(0, explosionDuration));

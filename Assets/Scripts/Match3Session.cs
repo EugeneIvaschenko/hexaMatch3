@@ -15,8 +15,8 @@ public class Match3Session : MonoBehaviour {
     private void Awake() {
         grid = GetComponent<HexGrid>();
         grid.Init();
-        grid.animationEnd += UnblockClickHandler;
-        grid.gemsGathered += SumScore;
+        grid.AnimationEnd += UnblockClickHandler;
+        grid.GemsGathered += SumScore;
         Screen.orientation = ScreenOrientation.Landscape;
         Screen.autorotateToPortrait = false;
         grid.FillGrid();
@@ -45,12 +45,16 @@ public class Match3Session : MonoBehaviour {
 
     private void OnTileClick(HexTile tile) {
         if (isBlockedClickHandler) return;
-        if(checkedTile == null) {
+        if (checkedTile == null) {
             checkedTile = tile;
             checkedTile.SetHighlight(true);
         } else if (checkedTile == tile) {
             checkedTile.SetHighlight(false);
             checkedTile = null;
+        } else if (!HexMath.IsCubeNeighbor(tile.axialPos, checkedTile.axialPos)) {
+            checkedTile.SetHighlight(false);
+            checkedTile = tile;
+            checkedTile.SetHighlight(true);
         } else {
             checkedTile.SetHighlight(false);
             BlockClickHandler();
