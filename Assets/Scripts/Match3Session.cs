@@ -24,14 +24,12 @@ public class Match3Session : MonoBehaviour {
     }
 
     public void TurnLeft() {
-        Debug.Log("Turn left");
         if (isBlockedClickHandler) return;
         isBlockedClickHandler = true;
         grid.TurnField(RotationDirection.Left);
     }
 
     public void TurnRight() {
-        Debug.Log("Turn Right");
         if (isBlockedClickHandler) return;
         isBlockedClickHandler = true;
         grid.TurnField(RotationDirection.Right);

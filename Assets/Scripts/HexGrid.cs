@@ -15,8 +15,7 @@ public class HexGrid : MonoBehaviour {
 
     public event Action AnimationEnd;
     public event Action<List<Gem>> GemsGathered;
-
-    private HexCoordinateSystem HexCoordinateSystem = HexCoordinateSystem.Axial;
+    
     private Match3Animations animator = new Match3Animations();
 
     public Vector2 GetPosOfTile(HexTile a) {
@@ -30,12 +29,9 @@ public class HexGrid : MonoBehaviour {
         return _size;
     }
 
-    private bool IsTileExist(Vector3 startHex, int gridSize) {
-        return HexMath.MaxAbs(startHex) <= gridSize;
-    }
-
     public void Init() {
         GenerateRoundGrid(_size);
+        HexMatch3Math.gridSize = _size;
     }
 
     private void GenerateRoundGrid(int n) {
@@ -74,7 +70,6 @@ public class HexGrid : MonoBehaviour {
             for (int y = HexMath.LowerYInX(x, Size()); y >= HexMath.HigherYinX(x, Size()); y--) { //all cells in column down to top
                 Vector2 tilePos = new Vector2(x, y);
                 if (transform.rotation.eulerAngles.z >= 180) tilePos *= -1; //filling in mirrir reverse if z-rotation is negative
-                Debug.Log(tilePos);
                 HexTile tile = hexGrid[tilePos];
                 if (tile.content == null) emptyTiles.Add(tilePos, tile);
             }
@@ -91,7 +86,7 @@ public class HexGrid : MonoBehaviour {
     private void TryFillDownIn(HexTile tile) {
         if (tile.content == null) {
             Vector3 northNeighbor = HexMath.RotateTileAround(HexMath.CubeNeighbor(tile.axialPos, CubeHexDirectionsFlat.N), HexMath.AxialToCube(tile.axialPos), Mathf.RoundToInt(transform.rotation.eulerAngles.z / 60));
-            if (IsTileExist(northNeighbor, Size())) {
+            if (HexMatch3Math.IsTileExist(northNeighbor, Size())) {
                 if (hexGrid[northNeighbor].content != null) {
                     MoveGem(hexGrid[northNeighbor], tile);
                     TryFillDownIn(hexGrid[northNeighbor]);
@@ -133,7 +128,7 @@ public class HexGrid : MonoBehaviour {
     private bool SearchToExplodeByAutoFill() {
         List<List<HexTile>> lines = new List<List<HexTile>>();
         foreach (var tilePair in hexGrid) {
-            FindMatchLines(ref lines, tilePair.Value);
+            HexMatch3Math.FindMatchLines(ref lines, tilePair.Value, hexGrid);
         }
         if (lines.Count > 0) {
             animator.Gathering(GetGemTransforms(lines), () => {
@@ -170,8 +165,8 @@ public class HexGrid : MonoBehaviour {
         if (HexMath.CubeDistance(tile.axialPos, checkedTile.axialPos) > 1) return false;
         SwapGems(tile, checkedTile);
         lines = new List<List<HexTile>>();
-        FindMatchLines(ref lines, tile);
-        FindMatchLines(ref lines, checkedTile);
+        HexMatch3Math.FindMatchLines(ref lines, tile, hexGrid);
+        HexMatch3Math.FindMatchLines(ref lines, checkedTile, hexGrid);
         if (lines.Count > 0) {
             return true;
         }
@@ -182,62 +177,7 @@ public class HexGrid : MonoBehaviour {
         }
     }
 
-    private void FindMatchLines(ref List<List<HexTile>> lines, HexTile tile) {
-        Dictionary<CubeHexDirectionsFlat, CubeHexDirectionsFlat> oppositeDirPairs = new Dictionary<CubeHexDirectionsFlat, CubeHexDirectionsFlat> {
-            { CubeHexDirectionsFlat.NW, CubeHexDirectionsFlat.SE},
-            { CubeHexDirectionsFlat.N, CubeHexDirectionsFlat.S},
-            { CubeHexDirectionsFlat.NE, CubeHexDirectionsFlat.SW}
-        };
-
-        foreach (KeyValuePair<CubeHexDirectionsFlat, CubeHexDirectionsFlat> dirs in oppositeDirPairs) {
-            List<HexTile> line = GetMatchedLine(tile, dirs);
-            if (line.Count >= 3) lines.Add(line); //TODO Refactor. Add correct check on !lines.Contains(line)
-        }
-    }
-
-    //Возвращает самую длинную линию, состоящию из гемов полностью совпадающих по одному любому признаку.
-    private List<HexTile> GetMatchedLine(HexTile tile, KeyValuePair<CubeHexDirectionsFlat, CubeHexDirectionsFlat> dirs) {
-        List<HexTile> colorLine = new List<HexTile>() { tile };
-        colorLine.AddRange(GetMatchedLine(tile, dirs.Key, GemSign.Color));
-        colorLine.AddRange(GetMatchedLine(tile, dirs.Value, GemSign.Color));
-
-        List<HexTile> shapeLine = new List<HexTile>() { tile };
-        shapeLine.AddRange(GetMatchedLine(tile, dirs.Key, GemSign.Shape));
-        shapeLine.AddRange(GetMatchedLine(tile, dirs.Value, GemSign.Shape));
-
-        if (colorLine.Count > shapeLine.Count) return colorLine;
-        else return shapeLine;
-    }
-
-    //Возвращает самую длинную линию, состоящию из гемов полностью совпадающих по указанному признаку.
-    private List<HexTile> GetMatchedLine(HexTile tile, CubeHexDirectionsFlat dir, GemSign sign) {
-        List<HexTile> colorLine = new List<HexTile>();
-        List<HexTile> shapeLine = new List<HexTile>();
-        int length = 1;
-        if (sign == GemSign.Color) {
-            while (true) {
-                Vector3 nextTilePos = HexMath.CubeAddVector(HexMath.AxialToCube(tile.axialPos), HexMath.CubeVector(dir) * length);
-                if (IsTileExist(nextTilePos, Size()) && hexGrid[nextTilePos].content.ColorType == tile.content.ColorType) {
-                    colorLine.Add(hexGrid[nextTilePos]);
-                    length++;
-                }
-                else break;
-            }
-            return colorLine;
-        }
-        else {
-            while (true) {
-                Vector3 nextTilePos = HexMath.CubeAddVector(HexMath.AxialToCube(tile.axialPos), HexMath.CubeVector(dir) * length);
-                if (IsTileExist(nextTilePos, Size()) && hexGrid[nextTilePos].content.ShapeType == tile.content.ShapeType) {
-                    shapeLine.Add(hexGrid[nextTilePos]);
-                    length++;
-                }
-                else break;
-            }
-            return shapeLine;
-        }
-    }
-
+    //TODO
     //Возвращает линию длиной не более lineLength
     private List<Vector2> CheckExistingLineFrom(Vector2 startHex, int gridSize, CubeHexDirectionsFlat dir, int lineLength = 3) {
         List<Vector2> hexes = new List<Vector2> {
@@ -245,7 +185,7 @@ public class HexGrid : MonoBehaviour {
         };
         for (int i = 1; i < lineLength; i++) {
             Vector3 nextHex = HexMath.CubeNeighbor(hexes[hexes.Count - 1], dir);
-            if (IsTileExist(nextHex, gridSize)) {
+            if (HexMatch3Math.IsTileExist(nextHex, gridSize)) {
                 hexes.Add(nextHex);
             }
             else break;
