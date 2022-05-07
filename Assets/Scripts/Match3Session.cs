@@ -8,15 +8,17 @@ public class Match3Session : MonoBehaviour {
     private HexTile checkedTile;
 
     [SerializeField] private TextMeshProUGUI scoreText;
-
-    private int score = 0;
     private bool isBlockedClickHandler = false;
+    private GameplayLogic gameplay = new GameplayLogic();
 
     private void Awake() {
         grid = GetComponent<HexGrid>();
-        grid.Init();
         grid.AnimationEnd += UnblockClickHandler;
-        grid.GemsGathered += SumScore;
+        grid.Init();
+        gameplay.PointsUpdated += UpdateScore;
+        gameplay.grid = grid;
+        gameplay.MoveEnded += UnblockClickHandler;
+        gameplay.Init();
         Screen.orientation = ScreenOrientation.Landscape;
         Screen.autorotateToPortrait = false;
         grid.FillGrid();
@@ -56,7 +58,7 @@ public class Match3Session : MonoBehaviour {
         } else {
             checkedTile.SetHighlight(false);
             BlockClickHandler();
-            grid.SearchToExplodeBySwap(tile, checkedTile);
+            gameplay.TrySwapGemsToGathering(tile, checkedTile);
             checkedTile = null;
         }
     }
@@ -69,12 +71,7 @@ public class Match3Session : MonoBehaviour {
         isBlockedClickHandler = false;
     }
 
-    private void SumScore(List<Gem> gatheredGems) {
-        AddScore(gatheredGems.Count);
-    }
-
-    private void AddScore(int points) {
-        score += points;
-        if(scoreText != null) scoreText.text = "Score: " + score.ToString();
+    private void UpdateScore(int score) {
+        if (scoreText != null) scoreText.text = "Score: " + score.ToString();
     }
 }

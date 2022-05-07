@@ -803,7 +803,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _size: 3
-  _padding: 0.05
+  _padding: 0
   _tilePrefab: {fileID: 5767601822692823231, guid: e2948843db600204b861efeb160fd75e, type: 3}
   gemPrefab: {fileID: 8288309135092928825, guid: 7760fb5947c4e364b936e2eb715a25df, type: 3}
   colors: {fileID: 11400000, guid: ff1f81ec82ea12b448686053686deb5b, type: 2}

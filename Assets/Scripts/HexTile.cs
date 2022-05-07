@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class HexTile : MonoBehaviour {
     private SpriteRenderer _sprite;
-    private bool _isHighlighted = false;
 
     public Action<HexTile> OnHexMouseClick;
     public Action<HexTile> OnHexMouseEnter;
@@ -24,8 +23,7 @@ public class HexTile : MonoBehaviour {
     }
 
     public void SetHighlight(bool highlight) {
-        _isHighlighted = highlight;
-        if (_isHighlighted) _sprite.color = highlightColor;
+        if (highlight) _sprite.color = highlightColor;
         else _sprite.color = _origColor;
     }
 
@@ -33,6 +31,12 @@ public class HexTile : MonoBehaviour {
         TMP_Text tmp = GetComponentInChildren<TMP_Text>();
         name = $"Tile {pos.x} {pos.y}";
         tmp.text = $"{pos.x} {pos.y}";
+    }
+
+    public void SwapGems(HexTile otherTile) {
+        Gem tempGem = this.content;
+        this.content = otherTile.content;
+        otherTile.content = tempGem;
     }
 
     private void OnMouseEnter() {
