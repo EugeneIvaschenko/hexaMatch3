@@ -14,94 +14,92 @@ public class HexGrid : MonoBehaviour {
     public Dictionary<Vector2, HexTile> hexGrid { get; private set; }
 
     public event Action AnimationEnd;
+    public event Action GridRefilled;
     
     private Match3Animations animator = new Match3Animations();
 
-    public void TurnField(RotationDirection dir) {
-        Vector3 angle = new Vector3(0, 0, dir == RotationDirection.Left ? 60f : -60f);
-        animator.RorateField(transform, transform.rotation.eulerAngles + angle, EndAnimation);
+    public void RefillGrid() {
+        List<HexTile[]> columns = GetColumns();
+        List<Transform[]> colsOfNew = new List<Transform[]>();
+        List<Transform> oldTransforms = new List<Transform>();
+        
+        foreach (var column in columns) {
+            foreach (var tile in column) {
+                if (tile.content != null) oldTransforms.Add(tile.content.transform);
+            }
+
+            List<Gem> gems = RefillColumnAndGetNewGems(column);
+            List<Transform> newGems = new List<Transform>();
+            foreach (var gem in gems)
+            {
+                newGems.Add(gem.transform);
+            }
+            colsOfNew.Add(newGems.ToArray());
+        }
+        DoFallAndRiseGemsAnimation(oldTransforms, colsOfNew, () => GridRefilled?.Invoke());
     }
 
-    public void RefillEmptyTiles() {
-        Dictionary<Vector2, HexTile> emptyTiles = new Dictionary<Vector2, HexTile>();
+    private List<HexTile[]> GetColumns() {
+        List<HexTile[]> columns = new List<HexTile[]>();
+        for (int x = -_size; x <= _size; x++) { //all columns left to right
+            columns.Add(GetColumn(x, _size).ToArray());
+        }
+        return columns;
+    }
 
-        for (int x = -Size(); x <= Size(); x++) { //all columns left to right
-            for (int y = HexMath.LowerYInX(x, Size()); y >= HexMath.HigherYinX(x, Size()); y--) { //all cells in column down to top
-                Vector2 tilePos = new Vector2(x, y);
-                if (transform.rotation.eulerAngles.z >= 180) tilePos *= -1; //filling in reverse order if z-rotation is negative
-                HexTile tile = hexGrid[tilePos];
-                if (tile.content == null) emptyTiles.Add(tilePos, tile);
+    private List<HexTile> GetColumn(int x, int size) {
+        List<HexTile> column = new List<HexTile>();
+        for (int y = HexMath.LowerYInX(x, size); y >= HexMath.HigherYinX(x, size); y--) { //all cells in column down to top
+            Vector2 tilePos = new Vector2(x, y);
+            tilePos = HexMath.GetGridTurnCompensatedPos(HexMath.AxialToCube(tilePos), transform.rotation.eulerAngles.z);
+            HexTile tile = hexGrid[tilePos];
+            column.Add(tile);
+        }
+        return column;
+    }
+
+    private List<Gem> RefillColumnAndGetNewGems(HexTile[] column) {
+        List<Gem> newGems = new List<Gem>();
+        for (int i = 0; i < column.Length; i++) {
+            if (column[i].content != null) continue;
+            if (i == column.Length - 1) {
+                CreateNewGemFor(column[i]);
+                newGems.Add(column[i].content);
+                continue;
+            }
+            Gem gem = TakeGemFromHigherTileOrNull(column, i + 1);
+            if(gem != null) {
+                SetGemFor(column[i], gem);
+            } else {
+                CreateNewGemFor(column[i]);
+                newGems.Add(column[i].content);
             }
         }
+        return newGems;
+    }
 
-        foreach (var tilePair in emptyTiles) {
-            TryFillDownIn(tilePair.Value);
+    private Gem TakeGemFromHigherTileOrNull(HexTile[] column, int higherIndex) {
+        if (column[higherIndex].content != null) {
+            Gem gem = column[higherIndex].content;
+            column[higherIndex].content = null;
+            return gem;
         }
-
-        if (emptyTiles.Count > 0) animator.AddCallback(RefillEmptyTiles);
+        if (higherIndex < column.Length - 1) return TakeGemFromHigherTileOrNull(column, higherIndex + 1);
+        return null;
     }
 
-    private void TryFillDownIn(HexTile tile) {
-        if (tile.content == null) {
-            Vector3 northNeighbor = HexMath.RotateTileAround(HexMath.CubeNeighbor(tile.axialPos, CubeHexDirectionsFlat.N), HexMath.AxialToCube(tile.axialPos), Mathf.RoundToInt(transform.rotation.eulerAngles.z / 60));
-            if (IsTileExist(northNeighbor, Size())) {
-                if (hexGrid[northNeighbor].content != null) {
-                    DoMoveGemAnimation(hexGrid[northNeighbor], tile);
-                    TryFillDownIn(hexGrid[northNeighbor]);
-                }
-            }
-            else {
-                CreateNewGem(tile);
-            }
+    private List<Gem> GetOldGems(List<Gem> newGems) {
+        List<Gem> oldGems = new List<Gem>();
+        foreach(var tile in hexGrid) {
+            if (!newGems.Contains(tile.Value.content)) oldGems.Add(tile.Value.content);
         }
-    }
-    
-
-
-
-    //OLD MODEL-VIEW
-
-    private void CreateNewGem(HexTile tile) {
-        SetRandomGem(tile, colors, shapes);
-        animator.RiseGem(tile.content.transform);
+        return oldGems;
     }
 
-
-    //ANIMATIONS
-
-    public void DoSwapGemsAnimation(HexTile tile1, HexTile tile2, Action callback) {
-        //TODO Refactor:  Избавится от привязки объекта гема к парент-объекту тайла
-        tile1.content.transform.SetParent(tile1.transform);
-        tile2.content.transform.SetParent(tile2.transform);
-        animator.SwapGems(tile1.content.transform, tile2.content.transform, () => callback());
+    private void SetGemFor(HexTile tile, Gem gem){
+        tile.content = gem;
+        gem.transform.parent = tile.transform;
     }
-
-    public void DoFailSwapAnimation(HexTile tile1, HexTile tile2) {
-        animator.FailSwapping(tile1.content.transform, tile2.content.transform, EndAnimation);
-    }
-
-    public void DoMoveGemAnimation(HexTile from, HexTile to) {
-        to.content = from.content;
-        to.content.transform.parent = to.transform;
-        from.content = null;
-        animator.MoveToParent(to.content.transform);
-    }
-
-    public void DoGatheringAnimation(List<HexTile> tiles, Action callback) {
-        List<Transform> transforms = new List<Transform>();
-        foreach(var tile in tiles) {
-            transforms.Add(tile.content.transform);
-        }
-        animator.Gathering(transforms.ToArray(), () => callback());
-    }
-
-    private void EndAnimation() {
-        AnimationEnd?.Invoke();
-    }
-
-
-
-    //NEW MODEL/////////
 
     public void Init() {
         GenerateRoundGrid(_size);
@@ -126,15 +124,15 @@ public class HexGrid : MonoBehaviour {
             List<GemColorType> newColors = colors.ColorList();
             List<GemShapeType> newShapes = shapes.ShapeList();
             foreach (var dir in dirs) {
-                RemoveDublicateColorFromColorList(ref newColors, CheckExistingLineFrom(tile.Key, Size(), dir));
-                RemoveDuplicateShapeFromShapeList(ref newShapes, CheckExistingLineFrom(tile.Key, Size(), dir));
+                RemoveDublicateColorFromColorList(ref newColors, CheckExistingLineFrom(tile.Key, _size, dir));
+                RemoveDuplicateShapeFromShapeList(ref newShapes, CheckExistingLineFrom(tile.Key, _size, dir));
             }
 
             SetRandomGem(tile.Value, colors.GetNewColorsSO(newColors), shapes.GetNewShapesSO(newShapes));
         }
     }
 
-    private void SetRandomGem(HexTile tile) {
+    private void CreateNewGemFor(HexTile tile) {
         SetRandomGem(tile, colors, shapes);
     }
 
@@ -187,7 +185,7 @@ public class HexGrid : MonoBehaviour {
         if (sign == GemSign.Color) {
             while (true) {
                 Vector3 nextTilePos = HexMath.CubeAddVector(HexMath.AxialToCube(tile.axialPos), HexMath.CubeVector(dir) * length);
-                if (IsTileExist(nextTilePos, Size()) && hexGrid[nextTilePos].content.ColorType == tile.content.ColorType) {
+                if (hexGrid.ContainsKey(nextTilePos) && hexGrid[nextTilePos].content.ColorType == tile.content.ColorType) {
                     colorLine.Add(hexGrid[nextTilePos]);
                     length++;
                 }
@@ -198,7 +196,7 @@ public class HexGrid : MonoBehaviour {
         else {
             while (true) {
                 Vector3 nextTilePos = HexMath.CubeAddVector(HexMath.AxialToCube(tile.axialPos), HexMath.CubeVector(dir) * length);
-                if (IsTileExist(nextTilePos, Size()) && hexGrid[nextTilePos].content.ShapeType == tile.content.ShapeType) {
+                if (hexGrid.ContainsKey(nextTilePos) && hexGrid[nextTilePos].content.ShapeType == tile.content.ShapeType) {
                     shapeLine.Add(hexGrid[nextTilePos]);
                     length++;
                 }
@@ -215,7 +213,7 @@ public class HexGrid : MonoBehaviour {
         };
         for (int i = 1; i < lineLength; i++) {
             Vector3 nextHex = HexMath.CubeNeighbor(hexes[hexes.Count - 1], dir);
-            if (IsTileExist(nextHex, gridSize)) {
+            if (hexGrid.ContainsKey(nextHex)) {
                 hexes.Add(nextHex);
             }
             else break;
@@ -247,7 +245,6 @@ public class HexGrid : MonoBehaviour {
         return true;
     }
 
-
     public List<HexTile> GetTiles(List<GemsLine> lines) {
         List<HexTile> list = new List<HexTile>();
         foreach (var line in lines) {
@@ -262,22 +259,41 @@ public class HexGrid : MonoBehaviour {
         foreach (var tile in tiles) {
             if (tile.content == null || tile.content.gameObject == null) continue;
             tile.content.gameObject.SetActive(false);
+            Destroy(tile.content.gameObject);
             tile.content = null;
         }
     }
 
-    private bool IsTileExist(Vector3 startHex, int gridSize) {
-        return HexMath.MaxAbs(startHex) <= gridSize;
+    //ANIMATIONS
+
+    public void DoTurnFieldAnimation(RotationDirection dir) {
+        Vector3 angle = new Vector3(0, 0, dir == RotationDirection.Left ? 60f : -60f);
+        animator.RotateField(transform, transform.rotation.eulerAngles + angle, EndAnimation);
     }
 
-    public Vector2 GetPosOfTile(HexTile a) {
-        foreach (var hex in hexGrid) {
-            if (hex.Value == a) return hex.Key;
+    public void DoSwapGemsAnimation(HexTile tile1, HexTile tile2, TweenCallback callback) {
+        //TODO Refactor:  Избавится от привязки объекта гема к парент-объекту тайла
+        tile1.content.transform.SetParent(tile1.transform);
+        tile2.content.transform.SetParent(tile2.transform);
+        animator.SwapGems(tile1.content.transform, tile2.content.transform, callback);
+    }
+
+    public void DoFailSwapAnimation(HexTile tile1, HexTile tile2) {
+        animator.FailSwapping(tile1.content.transform, tile2.content.transform, EndAnimation);
+    }
+
+    public void DoGatheringAnimation(List<HexTile> tiles, TweenCallback callback) {
+        List<Transform> transforms = new List<Transform>();
+        foreach (var tile in tiles)
+        {
+            transforms.Add(tile.content.transform);
         }
-        throw new System.Exception("Has no found searched hex");
+        animator.Gathering(transforms.ToArray(), callback);
     }
 
-    public int Size() {
-        return _size;
+    public void DoFallAndRiseGemsAnimation(List<Transform> oldGems, List<Transform[]> newGems, TweenCallback callback) {
+        animator.FallAndRiseGems(oldGems, newGems, callback);
     }
+
+    private void EndAnimation() => AnimationEnd?.Invoke();
 }

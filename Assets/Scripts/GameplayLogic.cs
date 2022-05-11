@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class GameplayLogic {
     public HexGrid grid;
@@ -12,6 +13,7 @@ public class GameplayLogic {
 
     public void Init() {
         GemsDestroyed += OnGemsDestroyed;
+        grid.GridRefilled += CheckGatheringByAutofill;
     }
 
     public void TrySwapGemsToGathering(HexTile tile, HexTile checkedTile) {
@@ -47,9 +49,8 @@ public class GameplayLogic {
     }
 
     private void OnGemsDestroyed() {
-        grid.RefillEmptyTiles();
-
-        CheckGatheringByAutofill();
+        grid.RefillGrid();
+        //CheckGatheringByAutofill();
     }
 
     private void AddScore(int points) {

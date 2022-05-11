@@ -111,11 +111,7 @@ public static class HexMath {
         else return false;
     }
 
-    public static Vector3 RotateTileAroundCenter(Vector3 hex, int sixthsCircle) {
-        return RotateTileAround(hex, Vector3.zero, sixthsCircle);
-    }
-
-    public static Vector3 RotateTileAround(Vector3 hex, Vector3 aroundHex, int sixthsCircle) {
+    public static Vector3 RotateHexAround(Vector3 hex, Vector3 aroundHex, int sixthsCircle) {
         hex -= aroundHex;
         for (int i = 0; i < Mathf.Abs(sixthsCircle); i++) {
             if (sixthsCircle < 0) hex = new Vector3(-hex.z, -hex.x, -hex.y);
@@ -123,6 +119,18 @@ public static class HexMath {
         }
         hex += aroundHex;
         return hex;
+    }
+
+    public static Vector3 RotateHexAroundCenter(Vector3 hex, int sixthsCircle) {
+        return RotateHexAround(hex, Vector3.zero, sixthsCircle);
+    }
+
+    public static Vector3 GetGridTurnCompensatedPos(Vector3 hex, float eulerAngle) {
+        return RotateHexAroundCenter(hex, GetSixthsOfRotation(eulerAngle));
+    }
+
+    public static int GetSixthsOfRotation(float eulerAngle) {
+        return Mathf.RoundToInt(eulerAngle / 60);
     }
 
     public static float MaxAbs(Vector3 pos) {

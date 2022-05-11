@@ -1,17 +1,17 @@
 using DG.Tweening;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Match3Animations {
 
     private Sequence fillingSequence;
-    private float fallingDuration = 0.3f;
-    private float fillingDuration = 0.35f;
-    private float swappingDuration = 0.4f;
-    private float failSwappingDuration = 0.25f;
-    private float explosionDuration = 0.6f;
-    private float fieldRotationDuration = 0.6f;
+    private readonly float fallingDurationForUnit = 0.15f;
+    private readonly float swappingDuration = 0.4f;
+    private readonly float failSwappingDuration = 0.25f;
+    private readonly float explosionDuration = 0.6f;
+    private readonly float fieldRotationDuration = 0.6f;
 
-    public void RorateField(Transform transform, Vector3 angle, TweenCallback callback = null) {
+    public void RotateField(Transform transform, Vector3 angle, TweenCallback callback = null) {
         transform.DORotate(angle, fieldRotationDuration).OnComplete(callback).OnUpdate(() => {
             Gem[] children = transform.GetComponentsInChildren<Gem>();
             foreach(var child in children) {
@@ -42,24 +42,34 @@ public class Match3Animations {
         sequence.AppendCallback(callback);
     }
 
-    public void MoveToParent(Transform transform) {
-        if (IsAnactiveAndComplete()) fillingSequence = DOTween.Sequence();
-        fillingSequence.Join(transform.DOLocalMove(Vector3.zero, fallingDuration).SetEase(Ease.Linear));
-    }
+    public void FallAndRiseGems(List<Transform> oldTransforms, List<Transform[]> newTransforms, TweenCallback callback = null) {
+        Sequence oldSeq = DOTween.Sequence();
+        foreach (var transform in oldTransforms) {
+            oldSeq.Join(transform.DOMove(transform.parent.position, Mathf.Abs((transform.parent.position - transform.position).magnitude) * fallingDurationForUnit).SetEase(Ease.Linear));
+        }
+        //oldSeq.AppendCallback(callback);
 
-    public void RiseGem(Transform transform) {
-        if (IsAnactiveAndComplete()) fillingSequence = DOTween.Sequence();
-        Vector3 scale = transform.localScale;
-        transform.localScale = Vector3.zero;
-        fillingSequence.Join(transform.DOScale(scale, fillingDuration).SetEase(Ease.InSine));
-    }
+        Sequence newSeqMove = DOTween.Sequence();
+        Sequence newSeqScale = DOTween.Sequence();
+        foreach (var colOfNew in newTransforms) {
+            if (colOfNew.Length == 0) continue;
+            float pointOfRising = colOfNew[colOfNew.Length - 1].position.y + HexMath.smallSizeRatio;
 
-    private bool IsAnactiveAndComplete() {
-        return !fillingSequence.IsActive() || fillingSequence.IsComplete();
-    }
+            for (int i = 0; i < colOfNew.Length; i++) {
+                Transform transform = colOfNew[i].transform;
 
-    public void AddCallback(TweenCallback callback) {
-        if (fillingSequence.IsActive())
-            fillingSequence.AppendCallback(callback);
+                float startPosY = pointOfRising + i * HexMath.smallSizeRatio;
+                float targetY = transform.position.y;
+                transform.position = new Vector3(transform.position.x, startPosY, transform.position.z);
+                newSeqMove.Join(transform.DOMoveY(targetY, Mathf.Abs(startPosY - targetY) * fallingDurationForUnit).SetEase(Ease.Linear));
+
+                Vector3 targetScale = transform.localScale;
+                transform.localScale = Vector3.zero;
+                newSeqScale.Insert(fallingDurationForUnit * (i + 0.25f), transform.DOScale(targetScale, 0.5f * fallingDurationForUnit));
+            }
+            //RiseGems(colOfNew);
+        }
+
+        newSeqScale.AppendCallback(callback);
     }
 }

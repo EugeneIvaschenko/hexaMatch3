@@ -13,13 +13,13 @@ public class Match3Session : MonoBehaviour {
 
     private void Awake() {
         grid = GetComponent<HexGrid>();
-        grid.AnimationEnd += UnblockClickHandler;
+        grid.AnimationEnd += UnblockClickHandling;
         grid.Init();
         gameplay.PointsUpdated += UpdateScore;
         gameplay.grid = grid;
-        gameplay.MoveEnded += UnblockClickHandler;
+        gameplay.MoveEnded += UnblockClickHandling;
         gameplay.Init();
-        Screen.orientation = ScreenOrientation.Landscape;
+        Screen.orientation = ScreenOrientation.LandscapeLeft;
         Screen.autorotateToPortrait = false;
         grid.FillGrid();
         SetListeners();
@@ -28,13 +28,13 @@ public class Match3Session : MonoBehaviour {
     public void TurnLeft() {
         if (isBlockedClickHandler) return;
         isBlockedClickHandler = true;
-        grid.TurnField(RotationDirection.Left);
+        grid.DoTurnFieldAnimation(RotationDirection.Left);
     }
 
     public void TurnRight() {
         if (isBlockedClickHandler) return;
         isBlockedClickHandler = true;
-        grid.TurnField(RotationDirection.Right);
+        grid.DoTurnFieldAnimation(RotationDirection.Right);
     }
 
     private void SetListeners() {
@@ -57,17 +57,17 @@ public class Match3Session : MonoBehaviour {
             checkedTile.SetHighlight(true);
         } else {
             checkedTile.SetHighlight(false);
-            BlockClickHandler();
+            BlockClickHandling();
             gameplay.TrySwapGemsToGathering(tile, checkedTile);
             checkedTile = null;
         }
     }
 
-    private void BlockClickHandler() {
+    private void BlockClickHandling() {
         isBlockedClickHandler = true;
     }
 
-    private void UnblockClickHandler() {
+    private void UnblockClickHandling() {
         isBlockedClickHandler = false;
     }
 
