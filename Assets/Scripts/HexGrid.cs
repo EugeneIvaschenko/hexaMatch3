@@ -88,14 +88,6 @@ public class HexGrid : MonoBehaviour {
         return null;
     }
 
-    private List<Gem> GetOldGems(List<Gem> newGems) {
-        List<Gem> oldGems = new List<Gem>();
-        foreach(var tile in hexGrid) {
-            if (!newGems.Contains(tile.Value.content)) oldGems.Add(tile.Value.content);
-        }
-        return oldGems;
-    }
-
     private void SetGemFor(HexTile tile, Gem gem){
         tile.content = gem;
         gem.transform.parent = tile.transform;
