@@ -8,7 +8,7 @@ public class Match3Session : MonoBehaviour {
 
     [SerializeField] private TextMeshProUGUI scoreText;
     private bool isBlockedClickHandler = false;
-    private GameplayLogic gameplay = new GameplayLogic();
+    private readonly GameplayLogic gameplay = new();
 
     private void Awake() {
         grid = GetComponent<HexGrid>();
@@ -27,13 +27,13 @@ public class Match3Session : MonoBehaviour {
     public void TurnLeft() {
         if (isBlockedClickHandler) return;
         isBlockedClickHandler = true;
-        grid.DoTurnFieldAnimation(RotationDirection.Left);
+        Match3AnimationsMediator.DoTurnFieldAnimation(transform, RotationDirection.Left, UnblockClickHandling);
     }
 
     public void TurnRight() {
         if (isBlockedClickHandler) return;
         isBlockedClickHandler = true;
-        grid.DoTurnFieldAnimation(RotationDirection.Right);
+        Match3AnimationsMediator.DoTurnFieldAnimation(transform, RotationDirection.Right, UnblockClickHandling);
     }
 
     private void SetListeners() {

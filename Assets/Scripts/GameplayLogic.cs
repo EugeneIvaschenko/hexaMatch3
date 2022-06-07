@@ -5,6 +5,7 @@ public class GameplayLogic {
     public HexGrid grid;
 
     private int score = 0;
+
     public event Action<int> PointsUpdated;
     public event Action GemsDestroyed;
     public event Action MoveEnded;
@@ -19,10 +20,9 @@ public class GameplayLogic {
         List<GemsLine> lines = grid.SearchLinesToGathering();
         if (lines.Count == 0) {
             tile.SwapGems(checkedTile);
-            grid.DoFailSwapAnimation(tile, checkedTile);
-        }
-        else {
-            grid.DoSwapGemsAnimation(tile, checkedTile, () => GatherGems(grid.GetTiles(lines)));
+            Match3AnimationsMediator.DoFailSwapAnimation(tile, checkedTile, () => MoveEnded?.Invoke());
+        } else {
+            Match3AnimationsMediator.DoSwapGemsAnimation(tile, checkedTile, () => GatherGems(grid.GetTiles(lines)));
         }
     }
 
@@ -30,15 +30,14 @@ public class GameplayLogic {
         List<GemsLine> lines = grid.SearchLinesToGathering();
         if (lines.Count == 0) {
             MoveEnded?.Invoke();
-        }
-        else {
+        } else {
             GatherGems(grid.GetTiles(lines));
         }
     }
 
     private void GatherGems(List<HexTile> gems) {
         AddScore(gems.Count);
-        grid.DoGatheringAnimation(gems, () => DestroyGems(gems));
+        Match3AnimationsMediator.DoGatheringAnimation(gems, () => DestroyGems(gems));
     }
 
     private void DestroyGems(List<HexTile> gems) {
@@ -48,7 +47,6 @@ public class GameplayLogic {
 
     private void OnGemsDestroyed() {
         grid.RefillGrid();
-        //CheckGatheringByAutofill();
     }
 
     private void AddScore(int points) {

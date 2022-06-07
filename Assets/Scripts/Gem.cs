@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Gem : MonoBehaviour {
-
     public GemColorType ColorType { get; private set; }
     public GemShapeType ShapeType { get; private set; }
 

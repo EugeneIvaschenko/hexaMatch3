@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -23,8 +21,10 @@ public class HexTile : MonoBehaviour {
     }
 
     public void SetHighlight(bool highlight) {
-        if (highlight) _sprite.color = highlightColor;
-        else _sprite.color = _origColor;
+        if (highlight)
+            _sprite.color = highlightColor;
+        else
+            _sprite.color = _origColor;
     }
 
     public void SetText(Vector2 pos) {
@@ -34,8 +34,8 @@ public class HexTile : MonoBehaviour {
     }
 
     public void SwapGems(HexTile otherTile) {
-        Gem tempGem = this.content;
-        this.content = otherTile.content;
+        Gem tempGem = content;
+        content = otherTile.content;
         otherTile.content = tempGem;
     }
 
