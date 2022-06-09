@@ -1,20 +1,25 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class HexGrid : MonoBehaviour {
-    [SerializeField] [Min(2)] private int _size;
-    [SerializeField] private float _padding;
+    private int _size;
+    private float _padding = 0;
     [SerializeField] private HexTile _tilePrefab;
     [SerializeField] private Gem gemPrefab;
-    [SerializeField] private ColorsSO colors;
-    [SerializeField] private ShapesSO shapes;
+    private ColorsSO colors;
+    private ShapesSO shapes;
 
-    public Dictionary<Vector2, HexTile> hexGrid { get; private set; }
+    public Dictionary<Vector2, HexTile> Grid { get; private set; }
 
     public event Action AnimationEnd;
     public event Action GridRefilled;
+
+    public void SetSettings(LevelSettings settings) {
+        _size = settings.gridSize;
+        colors = settings.colors;
+        shapes = settings.shapes;
+    }
 
     public void RefillGrid() {
         List<HexTile[]> columns = GetColumns();
@@ -50,7 +55,7 @@ public class HexGrid : MonoBehaviour {
         for (int y = HexMath.LowerYInX(x, size); y >= HexMath.HigherYinX(x, size); y--) { //all cells in column down to top
             Vector2 tilePos = new(x, y);
             tilePos = HexMath.GetGridTurnCompensatedPos(HexMath.AxialToCube(tilePos), transform.rotation.eulerAngles.z);
-            HexTile tile = hexGrid[tilePos];
+            HexTile tile = Grid[tilePos];
             column.Add(tile);
         }
         return column;
@@ -98,21 +103,21 @@ public class HexGrid : MonoBehaviour {
     }
 
     private void GenerateRoundGrid(int n) {
-        hexGrid = new Dictionary<Vector2, HexTile>();
+        Grid = new Dictionary<Vector2, HexTile>();
         for (int dx = -n; dx <= n; dx++) {
             for (int dy = Mathf.Max(-n, -dx - n); dy <= Mathf.Min(n, -dx + n); dy++) {
                 int dz = -dx - dy;
                 Vector2 hexPos = HexMath.CubeToAxial(new Vector3(dx, dy, dz));
-                hexGrid[hexPos] = Instantiate(_tilePrefab, HexMath.GetPixelPos(HexMath.AxialToEvenQ(hexPos), HexCoordinateSystem.EvenQOffset, _padding), Quaternion.identity, transform);
+                Grid[hexPos] = Instantiate(_tilePrefab, HexMath.GetPixelPos(HexMath.AxialToEvenQ(hexPos), HexCoordinateSystem.EvenQOffset, _padding), Quaternion.identity, transform);
                 //hexGrid[hexPos].SetText(hexPos);
-                hexGrid[hexPos].axialPos = hexPos;
+                Grid[hexPos].axialPos = hexPos;
             }
         }
     }
 
     public void FillGrid() {
         CubeHexDirectionsFlat[] dirs = { CubeHexDirectionsFlat.N, CubeHexDirectionsFlat.NW, CubeHexDirectionsFlat.SW };
-        foreach (var tile in hexGrid) {
+        foreach (var tile in Grid) {
             List<GemColorType> newColors = colors.ColorList();
             List<GemShapeType> newShapes = shapes.ShapeList();
             foreach (var dir in dirs) {
@@ -137,7 +142,7 @@ public class HexGrid : MonoBehaviour {
 
     public List<GemsLine> SearchLinesToGathering() {
         List<GemsLine> lines = new();
-        foreach (var tilePair in hexGrid) {
+        foreach (var tilePair in Grid) {
             FindMatchLines(ref lines, tilePair.Value);
         }
         return lines;
@@ -180,8 +185,8 @@ public class HexGrid : MonoBehaviour {
         if (sign == GemSign.Color) {
             while (true) {
                 Vector3 nextTilePos = HexMath.CubeAddVector(HexMath.AxialToCube(tile.axialPos), HexMath.CubeVector(dir) * length);
-                if (hexGrid.ContainsKey(nextTilePos) && hexGrid[nextTilePos].content.ColorType == tile.content.ColorType) {
-                    colorLine.Add(hexGrid[nextTilePos]);
+                if (Grid.ContainsKey(nextTilePos) && Grid[nextTilePos].content.ColorType == tile.content.ColorType) {
+                    colorLine.Add(Grid[nextTilePos]);
                     length++;
                 } else
                     break;
@@ -190,8 +195,8 @@ public class HexGrid : MonoBehaviour {
         } else {
             while (true) {
                 Vector3 nextTilePos = HexMath.CubeAddVector(HexMath.AxialToCube(tile.axialPos), HexMath.CubeVector(dir) * length);
-                if (hexGrid.ContainsKey(nextTilePos) && hexGrid[nextTilePos].content.ShapeType == tile.content.ShapeType) {
-                    shapeLine.Add(hexGrid[nextTilePos]);
+                if (Grid.ContainsKey(nextTilePos) && Grid[nextTilePos].content.ShapeType == tile.content.ShapeType) {
+                    shapeLine.Add(Grid[nextTilePos]);
                     length++;
                 } else
                     break;
@@ -207,7 +212,7 @@ public class HexGrid : MonoBehaviour {
         };
         for (int i = 1; i < lineLength; i++) {
             Vector3 nextHex = HexMath.CubeNeighbor(hexes[hexes.Count - 1], dir);
-            if (hexGrid.ContainsKey(nextHex)) {
+            if (Grid.ContainsKey(nextHex)) {
                 hexes.Add(nextHex);
             } else
                 break;
@@ -218,10 +223,10 @@ public class HexGrid : MonoBehaviour {
     private bool RemoveDublicateColorFromColorList(ref List<GemColorType> colors, List<Vector2> line) {
         if (line.Count < 3)
             return false;
-        GemColorType lastColor = hexGrid[line[1]].content.ColorType;
+        GemColorType lastColor = Grid[line[1]].content.ColorType;
 
         for (int i = 2; i < line.Count; i++) {
-            if (lastColor != hexGrid[line[i]].content.ColorType)
+            if (lastColor != Grid[line[i]].content.ColorType)
                 return false;
         }
 
@@ -233,10 +238,10 @@ public class HexGrid : MonoBehaviour {
     private bool RemoveDuplicateShapeFromShapeList(ref List<GemShapeType> shapes, List<Vector2> line) {
         if (line.Count < 3)
             return false;
-        GemShapeType lastShape = hexGrid[line[1]].content.ShapeType;
+        GemShapeType lastShape = Grid[line[1]].content.ShapeType;
 
         for (int i = 2; i < line.Count; i++) {
-            if (lastShape != hexGrid[line[i]].content.ShapeType)
+            if (lastShape != Grid[line[i]].content.ShapeType)
                 return false;
         }
 

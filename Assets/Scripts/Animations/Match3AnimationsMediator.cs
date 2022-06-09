@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 
 public class Match3AnimationsMediator {
-    private static readonly Match3Animations animator = new();
+    private static Match3Animations animator = new();
 
     public static void DoTurnFieldAnimation(Transform transform, RotationDirection dir, TweenCallback callback) {
         Vector3 angle = new(0, 0, dir == RotationDirection.Left ? 60f : -60f);

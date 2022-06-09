@@ -1,11 +1,10 @@
 fileFormatVersion: 2
-guid: 9cce80bd2821ed44597706107de77858
+guid: c46a662c31ad72d4a8cc779374268db6
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - _tilePrefab: {instanceID: 0}
-  - gemPrefab: {instanceID: 0}
+  - scoreText: {fileID: 3068863931888119028, guid: d7a5c2a6deaa86040b642ae3664fc518, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

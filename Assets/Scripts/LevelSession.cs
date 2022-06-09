@@ -1,19 +1,25 @@
 using UnityEngine;
 using TMPro;
 
-public class Match3Session : MonoBehaviour {
+public class LevelSession : MonoBehaviour {
 
     private HexGrid grid;
     private HexTile checkedTile;
 
     [SerializeField] private TextMeshProUGUI scoreText;
     private bool isBlockedClickHandler = false;
-    private readonly GameplayLogic gameplay = new();
+    private GameplayLogic gameplay;
 
     private void Awake() {
         grid = GetComponent<HexGrid>();
+        grid.gameObject.SetActive(false);
+    }
+
+    public void StartNewLevel(LevelSettings settings) {
         grid.AnimationEnd += UnblockClickHandling;
+        grid.SetSettings(settings);
         grid.Init();
+        gameplay = new();
         gameplay.PointsUpdated += UpdateScore;
         gameplay.grid = grid;
         gameplay.MoveEnded += UnblockClickHandling;
@@ -37,7 +43,7 @@ public class Match3Session : MonoBehaviour {
     }
 
     private void SetListeners() {
-        foreach (var tile in grid.hexGrid) {
+        foreach (var tile in grid.Grid) {
             tile.Value.OnHexMouseClick += OnTileClick;
         }
     }

@@ -11,6 +11,7 @@ public class GameplayLogic {
     public event Action MoveEnded;
 
     public void Init() {
+        score = 0;
         GemsDestroyed += OnGemsDestroyed;
         grid.GridRefilled += CheckGatheringByAutofill;
     }

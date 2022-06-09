@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb89014d85a4dad4fbf28eb18dfab7fd, type: 3}
+  m_Name: Standart
+  m_EditorClassIdentifier: 
+  gridSize: 4
+  colors: {fileID: 11400000, guid: ff1f81ec82ea12b448686053686deb5b, type: 2}
+  shapes: {fileID: 11400000, guid: 2d089c2f4edf2bf47b7ebbc18ad71d5b, type: 2}
