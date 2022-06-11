@@ -1,14 +1,28 @@
 using UnityEngine;
 using TMPro;
+using System;
 
 public class LevelSession : MonoBehaviour {
 
     private HexGrid grid;
     private HexTile checkedTile;
-
-    [SerializeField] private TextMeshProUGUI scoreText;
+    private HexTile ÑheckedTile {
+        get { return checkedTile; }
+        set {
+            if (checkedTile != null)
+                checkedTile.SetHighlight(false);
+            checkedTile = value;
+            if (checkedTile != null)
+                checkedTile.SetHighlight(true);
+        }
+    }
     private bool isBlockedClickHandler = false;
     private GameplayLogic gameplay;
+
+    public event Action<int> ScoreUpdated {
+        add { gameplay.PointsUpdated += value; }
+        remove { gameplay.PointsUpdated -= value; }
+    }
 
     private void Awake() {
         grid = GetComponent<HexGrid>();
@@ -20,7 +34,6 @@ public class LevelSession : MonoBehaviour {
         grid.SetSettings(settings);
         grid.Init();
         gameplay = new();
-        gameplay.PointsUpdated += UpdateScore;
         gameplay.grid = grid;
         gameplay.MoveEnded += UnblockClickHandling;
         gameplay.Init();
@@ -50,21 +63,16 @@ public class LevelSession : MonoBehaviour {
 
     private void OnTileClick(HexTile tile) {
         if (isBlockedClickHandler) return;
-        if (checkedTile == null) {
-            checkedTile = tile;
-            checkedTile.SetHighlight(true);
-        } else if (checkedTile == tile) {
-            checkedTile.SetHighlight(false);
-            checkedTile = null;
-        } else if (!HexMath.IsCubeNeighbor(tile.axialPos, checkedTile.axialPos)) {
-            checkedTile.SetHighlight(false);
-            checkedTile = tile;
-            checkedTile.SetHighlight(true);
+        if (ÑheckedTile == null) {
+            ÑheckedTile = tile;
+        } else if (ÑheckedTile == tile) {
+            ÑheckedTile = null;
+        } else if (!HexMath.IsCubeNeighbor(tile.axialPos, ÑheckedTile.axialPos)) {
+            ÑheckedTile = tile;
         } else {
-            checkedTile.SetHighlight(false);
             BlockClickHandling();
-            gameplay.TrySwapGemsToGathering(tile, checkedTile);
-            checkedTile = null;
+            gameplay.TrySwapGemsToGathering(tile, ÑheckedTile);
+            ÑheckedTile = null;
         }
     }
 
@@ -74,9 +82,5 @@ public class LevelSession : MonoBehaviour {
 
     private void UnblockClickHandling() {
         isBlockedClickHandler = false;
-    }
-
-    private void UpdateScore(int score) {
-        if (scoreText != null) scoreText.text = "Score: " + score.ToString();
     }
 }
