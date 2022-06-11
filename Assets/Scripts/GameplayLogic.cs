@@ -7,12 +7,10 @@ public class GameplayLogic {
     private int score = 0;
 
     public event Action<int> PointsUpdated;
-    public event Action GemsDestroyed;
     public event Action MoveEnded;
 
     public void Init() {
         score = 0;
-        GemsDestroyed += OnGemsDestroyed;
         grid.GridRefilled += CheckGatheringByAutofill;
     }
 
@@ -43,10 +41,6 @@ public class GameplayLogic {
 
     private void DestroyGems(List<HexTile> gems) {
         grid.DestroyGems(gems);
-        GemsDestroyed?.Invoke();
-    }
-
-    private void OnGemsDestroyed() {
         grid.RefillGrid();
     }
 

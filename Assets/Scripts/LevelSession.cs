@@ -19,6 +19,8 @@ public class LevelSession : MonoBehaviour {
     private bool isBlockedClickHandler = false;
     private GameplayLogic gameplay;
 
+    private int targetScore;
+
     public event Action<int> ScoreUpdated {
         add { gameplay.PointsUpdated += value; }
         remove { gameplay.PointsUpdated -= value; }
@@ -30,16 +32,23 @@ public class LevelSession : MonoBehaviour {
     }
 
     public void StartNewLevel(LevelSettings settings) {
-        grid.AnimationEnd += UnblockClickHandling;
         grid.SetSettings(settings);
-        grid.Init();
         gameplay = new();
         gameplay.grid = grid;
         gameplay.MoveEnded += UnblockClickHandling;
-        gameplay.Init();
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         Screen.autorotateToPortrait = false;
-        grid.FillGrid();
+        Init();
+    }
+
+    public void CloseLevel() {
+        grid.ClearGrid();
+        gameObject.SetActive(false);
+    }
+
+    private void Init() {
+        gameplay.Init();
+        grid.Init();
         SetListeners();
     }
 

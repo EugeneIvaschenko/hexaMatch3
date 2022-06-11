@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Match3Animations {
-
-    private Sequence fillingSequence;
     private readonly float fallingDurationForUnit = 0.15f;
     private readonly float swappingDuration = 0.4f;
     private readonly float failSwappingDuration = 0.25f;
-    private readonly float explosionDuration = 0.6f;
+    private readonly float gatheringDuration = 0.6f;
     private readonly float fieldRotationDuration = 0.6f;
 
     public void RotateField(Transform transform, Vector3 angle, TweenCallback callback = null) {
@@ -37,7 +35,7 @@ public class Match3Animations {
     public void Gathering(Transform[] transforms, TweenCallback callback = null) {
         Sequence sequence = DOTween.Sequence();
         foreach (var transform in transforms) {
-            sequence.Join(transform.DOScale(0, explosionDuration));
+            sequence.Join(transform.DOScale(0, gatheringDuration));
         }
         sequence.AppendCallback(callback);
     }

@@ -29,5 +29,6 @@ public class LevelUIMediator : MonoBehaviour {
         foreach(var button in buttons) {
             button.onClick.RemoveAllListeners();
         }
+        OnScoreUpdate(0);
     }
 }

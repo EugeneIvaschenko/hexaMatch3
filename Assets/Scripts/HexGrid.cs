@@ -11,8 +11,6 @@ public class HexGrid : MonoBehaviour {
     private ShapesSO shapes;
 
     public Dictionary<Vector2, HexTile> Grid { get; private set; }
-
-    public event Action AnimationEnd;
     public event Action GridRefilled;
 
     public void SetSettings(LevelSettings settings) {
@@ -100,6 +98,7 @@ public class HexGrid : MonoBehaviour {
 
     public void Init() {
         GenerateRoundGrid(_size);
+        FillGrid();
     }
 
     private void GenerateRoundGrid(int n) {
@@ -115,7 +114,7 @@ public class HexGrid : MonoBehaviour {
         }
     }
 
-    public void FillGrid() {
+    private void FillGrid() {
         CubeHexDirectionsFlat[] dirs = { CubeHexDirectionsFlat.N, CubeHexDirectionsFlat.NW, CubeHexDirectionsFlat.SW };
         foreach (var tile in Grid) {
             List<GemColorType> newColors = colors.ColorList();
@@ -269,5 +268,16 @@ public class HexGrid : MonoBehaviour {
             Destroy(tile.content.gameObject);
             tile.content = null;
         }
+    }
+
+    public void ClearGrid() {
+        foreach(var tilePair in Grid) {
+            Destroy(tilePair.Value.content.gameObject);
+            tilePair.Value.content = null;
+            Destroy(tilePair.Value.gameObject);
+        }
+        Grid.Clear();
+        GridRefilled = null;
+        transform.eulerAngles = Vector3.zero;
     }
 }
