@@ -1,6 +1,4 @@
 using UnityEngine;
-using TMPro;
-using System;
 
 public class LevelSession : MonoBehaviour {
 
@@ -18,53 +16,48 @@ public class LevelSession : MonoBehaviour {
     }
     private bool isBlockedClickHandler = false;
     private GameplayLogic gameplay;
-
-    private int targetScore;
-
-    public event Action<int> ScoreUpdated {
-        add { gameplay.PointsUpdated += value; }
-        remove { gameplay.PointsUpdated -= value; }
-    }
+    private LevelUIMediator levelUI;
 
     private void Awake() {
         grid = GetComponent<HexGrid>();
         grid.gameObject.SetActive(false);
     }
 
-    public void StartNewLevel(LevelSettings settings) {
+    public void StartNewLevel(LevelSettings settings, LevelUIMediator levelUIMediator) {
         grid.SetSettings(settings);
+        levelUI = levelUIMediator;
+        levelUI.SetLeftTurn(TurnLeft);
+        levelUI.SetRightTurn(TurnRight);
         gameplay = new();
+        gameplay.ScoreUpdated += levelUI.OnScoreUpdate;
+        gameplay.targetScore = settings.targetScore;
         gameplay.grid = grid;
         gameplay.MoveEnded += UnblockClickHandling;
-        Screen.orientation = ScreenOrientation.LandscapeLeft;
-        Screen.autorotateToPortrait = false;
-        Init();
-    }
-
-    public void CloseLevel() {
-        grid.ClearGrid();
-        gameObject.SetActive(false);
-    }
-
-    private void Init() {
+        gameplay.TargetScoreAchived += OnTargetScoreAchived;
         gameplay.Init();
         grid.Init();
-        SetListeners();
+        SetTileListeners();
     }
 
-    public void TurnLeft() {
+    public void ClearLevel() {
+        grid.ClearGrid();
+        gameObject.SetActive(false);
+        UnblockClickHandling();
+    }
+
+    private void TurnLeft() {
         if (isBlockedClickHandler) return;
         isBlockedClickHandler = true;
         Match3AnimationsMediator.DoTurnFieldAnimation(transform, RotationDirection.Left, UnblockClickHandling);
     }
 
-    public void TurnRight() {
+    private void TurnRight() {
         if (isBlockedClickHandler) return;
         isBlockedClickHandler = true;
         Match3AnimationsMediator.DoTurnFieldAnimation(transform, RotationDirection.Right, UnblockClickHandling);
     }
 
-    private void SetListeners() {
+    private void SetTileListeners() {
         foreach (var tile in grid.Grid) {
             tile.Value.OnHexMouseClick += OnTileClick;
         }
@@ -91,5 +84,16 @@ public class LevelSession : MonoBehaviour {
 
     private void UnblockClickHandling() {
         isBlockedClickHandler = false;
+    }
+
+    private void OnTargetScoreAchived() {
+        gameplay.MoveEnded += FinishLevel;
+    }
+
+    private void FinishLevel() {
+        Debug.Log("FinishLevel");
+        gameplay.MoveEnded -= FinishLevel;
+        BlockClickHandling();
+        levelUI.OpenCompleteLevelMenu();
     }
 }

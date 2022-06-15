@@ -15,4 +15,4 @@ MonoBehaviour:
   gridSize: 4
   colors: {fileID: 11400000, guid: ff1f81ec82ea12b448686053686deb5b, type: 2}
   shapes: {fileID: 11400000, guid: 2d089c2f4edf2bf47b7ebbc18ad71d5b, type: 2}
-  targetScore: 300
+  targetScore: 100

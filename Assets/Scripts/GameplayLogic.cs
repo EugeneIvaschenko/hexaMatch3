@@ -5,9 +5,11 @@ public class GameplayLogic {
     public HexGrid grid;
 
     private int score = 0;
+    public int targetScore = 0;
 
-    public event Action<int> PointsUpdated;
+    public event Action<int> ScoreUpdated;
     public event Action MoveEnded;
+    public event Action TargetScoreAchived;
 
     public void Init() {
         score = 0;
@@ -46,6 +48,8 @@ public class GameplayLogic {
 
     private void AddScore(int points) {
         score += points;
-        PointsUpdated?.Invoke(score);
+        ScoreUpdated?.Invoke(score);
+        if (score >= targetScore && targetScore != 0)
+            TargetScoreAchived?.Invoke();
     }
 }

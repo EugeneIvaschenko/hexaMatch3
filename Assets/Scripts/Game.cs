@@ -9,24 +9,23 @@ public class Game : MonoBehaviour {
     private void Start() {
         mainMenuUI.SetActive(true);
         levelUI.gameObject.SetActive(false);
+        Screen.orientation = ScreenOrientation.LandscapeLeft;
+        Screen.autorotateToPortrait = false;
     }
 
     public void StartNewSession() {
-        session.StartNewLevel(settings);
-        session.ScoreUpdated += levelUI.OnScoreUpdate;
+        session.StartNewLevel(settings, levelUI);
         session.gameObject.SetActive(true);
         levelUI.gameObject.SetActive(true);
         mainMenuUI.SetActive(false);
 
-        levelUI.SetLeftTurn(session.TurnLeft);
-        levelUI.SetRightTurn(session.TurnRight);
         levelUI.SetQuit(CloseSession);
     }
 
-    public void CloseSession() {
-        session.CloseLevel();
+    private void CloseSession() {
+        session.ClearLevel();
         mainMenuUI.SetActive(true);
         levelUI.gameObject.SetActive(false);
-        levelUI.ClearHandlers();
+        levelUI.ResetUI();
     }
 }
