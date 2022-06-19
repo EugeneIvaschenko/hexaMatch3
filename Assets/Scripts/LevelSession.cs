@@ -60,7 +60,22 @@ public class LevelSession : MonoBehaviour {
     private void SetTileListeners() {
         foreach (var tile in grid.Grid) {
             tile.Value.OnHexMouseClick += OnTileClick;
+            tile.Value.OnHexSwipe += OnTileHold;
         }
+    }
+
+    private void OnTileHold(HexTile tile) {
+        Vector2 swipeVector = Camera.main.ScreenToWorldPoint(Input.mousePosition) - tile.transform.position;
+        float angle = Vector2.SignedAngle(Vector2.up, swipeVector);
+        int sixths = HexMath.GetSixthsOfRotation(angle);
+        Vector3 relatedNeighbor = HexMath.RotateHexAroundCenter(HexMath.CubeDirections[CubeHexDirectionsFlat.N], -sixths);
+        relatedNeighbor = HexMath.GetGridTurnCompensatedPos(relatedNeighbor, grid.transform.rotation.eulerAngles.z);
+        Vector3 neighbor = HexMath.CubeAddVector(HexMath.AxialToCube(tile.axialPos), relatedNeighbor);
+        if (grid.Grid.ContainsKey(neighbor)) {
+            BlockClickHandling();
+            gameplay.TrySwapGemsToGathering(tile, grid.Grid[neighbor]);
+        }
+        ÑheckedTile = null;
     }
 
     private void OnTileClick(HexTile tile) {

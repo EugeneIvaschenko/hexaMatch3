@@ -60,7 +60,7 @@ public static class HexMath {
         return gridSize * 2 + 1 - Mathf.Abs(x);
     }
 
-    public static readonly Dictionary<CubeHexDirectionsFlat, Vector3> cubeDirections = new Dictionary<CubeHexDirectionsFlat, Vector3>() {
+    public static readonly Dictionary<CubeHexDirectionsFlat, Vector3> CubeDirections = new Dictionary<CubeHexDirectionsFlat, Vector3>() {
         { CubeHexDirectionsFlat.NW, new Vector3(-1, 0, +1)},
         { CubeHexDirectionsFlat.N, new Vector3(0, -1, +1)},
         { CubeHexDirectionsFlat.NE, new Vector3(+1, -1, 0)},
@@ -79,7 +79,7 @@ public static class HexMath {
     };
 
     public static Vector3 CubeVector(CubeHexDirectionsFlat direction) {
-        return cubeDirections[direction];
+        return CubeDirections[direction];
     }
 
     public static Vector3 CubeAddVector(Vector3 hex, Vector3 vector) {
@@ -87,7 +87,7 @@ public static class HexMath {
     }
 
     public static Vector3 CubeNeighbor(Vector3 hex, CubeHexDirectionsFlat direction) {
-        return hex + cubeDirections[direction];
+        return hex + CubeDirections[direction];
     }
 
     public static Vector3 CubeNeighbor(Vector2 hex, CubeHexDirectionsFlat direction) {
@@ -131,6 +131,10 @@ public static class HexMath {
 
     public static int GetSixthsOfRotation(float eulerAngle) {
         return Mathf.RoundToInt(eulerAngle / 60);
+    }
+
+    public static Vector3 GetNeighborByAngle(Vector3 hex, float angle) {
+        return Vector3.zero;
     }
 
     public static float MaxAbs(Vector3 pos) {

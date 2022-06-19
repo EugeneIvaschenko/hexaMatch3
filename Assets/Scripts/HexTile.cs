@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class HexTile : MonoBehaviour {
     private SpriteRenderer _sprite;
+    private bool isPressed = false;
 
     public Action<HexTile> OnHexMouseClick;
-    public Action<HexTile> OnHexMouseEnter;
-    public Action<HexTile> OnHexMouseExit;
+    public Action<HexTile> OnHexSwipe;
 
     [HideInInspector] public Gem content;
     [HideInInspector] public Vector2 axialPos;
@@ -39,15 +39,15 @@ public class HexTile : MonoBehaviour {
         otherTile.content = tempGem;
     }
 
-    private void OnMouseEnter() {
-        OnHexMouseEnter?.Invoke(this);
-    }
+    private void OnMouseUpAsButton() => OnHexMouseClick?.Invoke(this);
+
+    private void OnMouseDown() => isPressed = true;
+
+    private void OnMouseUp() => isPressed = false;
 
     private void OnMouseExit() {
-        OnHexMouseExit?.Invoke(this);
-    }
-
-    private void OnMouseUpAsButton() {
-        OnHexMouseClick?.Invoke(this);
+        if (isPressed)
+            OnHexSwipe?.Invoke(this);
+        isPressed = false;
     }
 }
